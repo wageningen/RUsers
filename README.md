@@ -13,7 +13,7 @@ If you have a suggestion, comment, problem or question, you can post an issue in
 
 For those that are not familiar with GitHub, check the [GitHub guide](https://guides.github.com/)
 
-This text is written in [Marckdown format](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
+This text is written in [Markdown format](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
 
 Happy code!
 
