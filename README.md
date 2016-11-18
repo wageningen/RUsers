@@ -17,4 +17,4 @@ This text is written in [Marckdown format](https://github.com/adam-p/markdown-he
 
 Happy code!
 
-RWageningen group.
+Wageningen RUser group.
