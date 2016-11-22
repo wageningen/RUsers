@@ -18,3 +18,5 @@ This text is written in [Markdown format](https://github.com/adam-p/markdown-her
 Happy code!
 
 Wageningen RUser group.
+
+Contact us at r-users@wur.nl
