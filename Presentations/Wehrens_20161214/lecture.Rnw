@@ -1,0 +1,921 @@
+\documentclass[fleqn]{beamer}
+%\VignetteEngine{knitr::knitr}
+\mode<presentation>
+%% \mode<handout>
+
+\usepackage{amsmath, mathtools}
+\usepackage{booktabs}
+\usepackage{wasysym}
+\usepackage{verbatim}
+\usepackage{comment, latexsym}
+\usepackage{xspace}
+\usepackage[latin1]{inputenc}
+\usepackage{times}
+\usepackage[T1]{fontenc}
+\usetheme[white]{wurnew} %blue, green, white, gray
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Save space in lists. Use this after the opening of the list
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\compresslist}{%
+  \setlength{\itemsep}{1pt}%
+  \setlength{\parskip}{0pt}%
+  \setlength{\parsep}{0pt}%
+}
+
+\input{/home/ron/tex/style-files/mymath}
+\usefonttheme[onlymath]{serif}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\definecolor{darkgreen}{rgb}{0,.5,.2}
+\newcommand{\ok}{{\color{darkgreen} $\surd$}}
+\newcommand{\duh}{{\color{red} $\otimes$}}
+\newcommand{\soso}{$\Box$}
+\newcommand{\code}[1]{{\color{wurgreen} \ttfamily #1}}
+
+%\input{mymath}
+\title{Lattice graphics}
+\author{Ron Wehrens}
+\institute{Biometris\\Wageningen University \& Research}
+\date{December 14, 2016}
+
+%% optional lecture-dependent graphic
+\renewcommand{\custompic}[1]{SubPlot.png}
+
+\begin{document}
+<<knitrInitialization,echo=FALSE>>=
+require("knitr", quietly=TRUE)
+opts_chunk$set(comment=NA, background='transparent', size = 'scriptsize', fig.width=6, fig.height=6, out.width='\\textwidth')
+
+require(latticeExtra, quietly = TRUE)
+require(gridExtra, quietly=TRUE)      
+@ 
+
+\begin{frame}[plain]
+  %%  \custompic{rose.png}
+  \titlepage
+\end{frame}
+
+\section{Introduction}
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Displaying data (and models)}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+      Good data graphics:\\
+      display data accurately and clearly
+
+      \par
+      \centerline{
+        \includegraphics[width=.6\textwidth]{definition.png}}
+
+      \vspace{2ex}
+      
+      \par
+      Seminal reference:\\
+      \alert{``Visualizing data''}\\
+      William S. Cleveland, (1993)
+      
+    \end{column} \pause
+    \begin{column}{.5\textwidth}
+      ``How to display data badly'',\\
+      {\tiny Howard Wainer, \alert{The American
+          Statistician} (1984)}
+
+      \small
+      \begin{enumerate} \compresslist
+      \item show as few data as possible
+      \item hide what data you do show
+      \item ignore the visual metaphor
+      \item only order matters
+      \item graph data out of context
+      \item change scales in mid-axis
+      \item emphasize the trivial
+      \item jiggle the baseline
+      \item Austria first!
+      \item Label illegibly, incompletely, incorrectly and
+        ambiguously
+      \item more is murkier
+      \item if it has been done well in the past, do it differently
+      \end{enumerate}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Example: choice of colors}
+    \begin{columns}[onlytextwidth]
+    \begin{column}[t]{.5\textwidth}
+      Matlab's colorjet:\\[2ex]
+      \par
+      \centerline{
+        \includegraphics[width=.8 \textwidth]{jetcolors.png}}
+
+      \begin{itemize}
+      \item introduces artefacts
+      \item highlights specific regions
+      \item no BW print
+      \item bad for colour-impaired people
+      \end{itemize}
+    \end{column} \pause
+    \begin{column}[t]{.5\textwidth}
+      Alternatives:\\[2ex]
+      \par
+      \centerline{
+        \includegraphics[width=.8 \textwidth]{colorbrewers.png}}
+
+      \vspace{1ex}
+      
+      From the \code{RColorBrewer} package
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Plotting systems in R}
+  \begin{enumerate}[<+->]
+  \item \code{graphics} (R Core team, ...)\\
+    base graphics, based on Cleveland principles
+  \item \code{lattice} (Deepayan Sarkar, ...)\\
+    ``Trellis'' graphics, \alert{especially} good for multi-panel plots
+  \item \code{ggplot2} (Hadley Wickham, ...)\\
+    ``tries to take the good parts of base and lattice graphics and
+    none of the bad parts'' ... \pause but very un-R-like syntax
+  \end{enumerate}
+
+  \pause
+
+  Both \code{lattice} and \code{ggplot2} make extensive use of the
+  \code{grid} package (Paul Murrel, R Core team)
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Example: the \code{mtcars} data}
+  \begin{columns}[onlytextwidth]
+    \begin{column}[t]{.4\textwidth}
+<<mtcarsBaseCode>>=
+data(mtcars)
+class(mtcars)
+dim(mtcars)
+@ 
+    \end{column} \pause
+    \begin{column}[t]{.6\textwidth}
+<<mtcarsPrint>>=
+head(mtcars[,1:4])
+@ 
+    \end{column}
+  \end{columns}  
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Miles per gallon...}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.6\textwidth}
+<<mtcarsCylPlot,eval=FALSE,echo=TRUE>>=
+ncyl <- c(8, 6, 4)
+par(mfrow = c(3,1))
+
+for (nc in ncyl) {
+  idx <- which(mtcars$cyl == nc)
+  
+  plot(density(mtcars$mpg[idx]),
+       main = nc,
+       xlab = "Miles per Gallon",
+       ylab = "Density")
+  rug(mtcars$mpg[idx], ticksize = .1)
+}
+@
+    \end{column} \pause
+    \begin{column}{.4\textwidth}
+<<mtcarsCylPlot2,echo=FALSE,eval=TRUE,ref.label='mtcarsCylPlot',fig.height=6,fig.width=4>>=
+@ 
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{The same in lattice}
+  \begin{columns}[onlytextwidth]
+    \begin{column}{.6\textwidth}
+<<mtcarsLattice,eval=FALSE>>=
+mtcars$cyl.f <- factor(mtcars$cyl)
+densityplot(~ mpg | cyl.f,
+  data = mtcars,
+  xlab = "Miles per Gallon",
+  layout = c(1,3))
+@ 
+\end{column} \pause
+    \begin{column}{.4\textwidth}
+<<mtcarsLatticePlot,ref.label='mtcarsLattice',echo=FALSE,fig.height=6,fig.width=4>>=
+@ 
+\end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{By the way...}
+  \begin{columns}[onlytextwidth]
+    \begin{column}{.6\textwidth}
+<<mtcarsLattice2,eval=FALSE>>=
+densityplot(~ mpg | cyl,
+  data = mtcars,
+  xlab = "Miles per Gallon",
+  layout = c(1,3))
+@ 
+\end{column}
+    \begin{column}{.4\textwidth}
+<<mtcarsLatticePlot2,ref.label='mtcarsLattice2',echo=FALSE,fig.height=6,fig.width=4>>=
+@ 
+\end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{And a more complicated example...}
+  How about two factors?
+
+<<postdocData,eval=TRUE,echo=TRUE>>=
+data(postdoc, package = "latticeExtra")
+rownames(postdoc)
+colnames(postdoc)
+@       
+\end{frame}
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{The postdoc plot (first version)}
+<<postdocPlot,echo=FALSE,fig.width=9, fig.height=5>>=
+dotplot(prop.table(postdoc, margin = 1), as.table = TRUE,
+        groups = FALSE, xlab = "Proportion",
+        par.strip.text = list(abbreviate = TRUE, minlength = 10))
+@ 
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Another version...}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+<<postdocPlot2,echo=FALSE,fig.width=6, fig.height=8>>=
+dotplot(prop.table(postdoc, margin = 1), as.table = TRUE,
+        layout = c(1,5), origin = 0,
+        index.cond = function(x, y) median(x),
+        xlab = "Proportion", aspect = .6, groups = FALSE,
+        par.strip.text = list(abbreviate = TRUE, minlength = 10),
+        scales = list(y = list(relation = "free", rot = 0)),
+        prepanel = function(x, y) {
+          list(ylim = levels(reorder(y, x)))
+        },
+        panel = function(x, y, ...) {
+          panel.dotplot(x, reorder(y, x), ...)
+        })
+@
+\end{column}
+    \begin{column}{.5\textwidth}
+      \begin{itemize}
+      \item Each panel sorted:\\
+        easy interpretation
+      \item Common x scale:\\
+        easy comparison
+      \item Include zero on x scale
+      \end{itemize}
+    \end{column}
+    \end{columns}
+\end{frame}
+
+<<standardPlots,echo=FALSE>>=
+pdf(file = "bwplot.pdf", width = 5, height = 5)
+bwplot(voice.part ~ height, singer,
+       panel = function(..., box.ratio) {
+         panel.violin(..., col = "transparent",
+                      varwidth = FALSE, box.ratio = box.ratio)
+         panel.bwplot(..., fill = NULL, box.ratio = .1)
+       } )
+woppa <- dev.off()
+pdf(file = "densityplot.pdf", width = 5, height = 5)
+set.seed(36872)
+rln <- rlnorm(100)
+densityplot(rln, 
+            scales = list(x = list(log = 2), alternating = 3),
+            xlab = "Simulated lognormal variates",
+            xscale.components = function(...) {
+              ans <- xscale.components.default(...)
+              ans$top <- ans$bottom
+              ans$bottom$labels$labels <- parse(text = ans$bottom$labels$labels)
+              ans$top$labels$labels <-
+                if (require(MASS,quietly=TRUE))
+                  fractions(2^(ans$top$labels$at))
+                else
+                  2^(ans$top$labels$at)
+              ans
+            })
+woppa <- dev.off()
+pdf(file = "barchart.pdf", width = 5, height = 5)
+barchart(Titanic, scales = list(x = "free"),
+         auto.key = list(title = "Survived"))
+woppa <- dev.off()
+pdf(file = "dotplot.pdf", width = 5, height = 7)
+dotplot(variety ~ yield | site, data = barley, groups = year,
+        key = simpleKey(levels(barley$year), space = "right"),
+        xlab = "Barley Yield (bushels/acre) ",
+        aspect=0.5, layout = c(1,6), ylab=NULL)
+woppa <- dev.off()
+pdf(file = "stripplot.pdf", width = 5, height = 5)
+stripplot(voice.part ~ jitter(height), data = singer, aspect = 1,
+          jitter.data = TRUE, xlab = "Height (inches)")
+woppa <- dev.off()
+pdf("histogram.pdf", width = 5, height = 7)
+histogram( ~ height | voice.part, data = singer, nint = 17,
+          endpoints = c(59.5, 76.5), layout = c(2,4), aspect = 1,
+          xlab = "Height (inches)")
+woppa <- dev.off()
+pdf("qqmath.pdf", width = 5, height = 7)
+qqmath(~ height | voice.part, data = singer,
+       prepanel = prepanel.qqmathline, layout = c(2,4),
+       panel = function(x, ...) {
+          panel.qqmathline(x, ...)
+          panel.qqmath(x, ...)
+       })
+woppa <- dev.off()
+@ 
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Basic lattice plots: univariate}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+      \begin{itemize}[<alert@+>]
+      \item \code{barchart}
+      \item \code{bwplot}
+      \item \code{densityplot}
+      \item \code{stripplot}
+      \item \code{dotplot}
+      \item \code{histogram}
+      \item \code{qqmath}
+      \end{itemize}
+    \end{column}
+    \begin{column}{.5\textwidth}
+      \par
+      \centerline{
+        \includegraphics<1>[width=.75\textwidth]{barchart}
+        \includegraphics<2>[width=.75\textwidth]{bwplot}
+        \includegraphics<3>[width=.75\textwidth]{densityplot}
+        \includegraphics<5>[width=.75\textwidth]{dotplot}
+        \includegraphics<6>[width=.75\textwidth]{histogram}
+        \includegraphics<7>[width=.75\textwidth]{qqmath}
+        \includegraphics<4>[width=.75\textwidth]{stripplot}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Further lattice plots}
+  \begin{columns}[onlytextwidth]
+    \begin{column}[t]{.5\textwidth}
+      Bivariate, trivariate
+      \begin{itemize}
+      \item \code{qq}
+      \item \code{xyplot}
+      \item \code{levelplot}
+      \item \code{contourplot}
+      \item \code{cloud}
+      \item \code{wireframe}
+      \end{itemize}
+    \end{column}
+    \begin{column}[t]{.5\textwidth}
+      Hypervariate, miscellaneous
+      \begin{itemize}
+      \item \code{splom}
+      \item \code{parallel}
+      \item \code{rfs}
+      \item \code{tmd}
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\section{Mechanics}
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Key features}
+  \begin{itemize}[<+->]
+  \item formula interface
+  \item especially useful for \code{data.frame} objects
+  \item also methods for other variable types
+  \item automatic splits into panels
+  \item defined by factor levels or variable ranges
+  \item indications of groups
+  \item automatic keys/legends
+  \item \alert{highly customizable}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Standard plot customizations}
+  \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+      Data: locations and characteristics of earthquakes near Fiji\\[1ex]
+      
+      Simplest possible case: show locations
+      
+<<quakesPlotCode0,eval=FALSE,echo=TRUE>>=
+xyplot(lat ~ long, 
+   data = quakes,
+   aspect = "iso")
+@ 
+\end{column}\pause
+\begin{column}{.5\textwidth}
+<<quakesPlot0,ref.label='quakesPlotCode0',echo=FALSE,fig.height=5.5,fig.width=5>>=
+@ 
+\end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Standard plot customizations}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+      Now: location and magnitude
+<<quakesPlotCode1,eval=FALSE,echo=TRUE>>=
+xyplot(lat ~ long, 
+   data = quakes,
+   groups =  cut(mag, 3),
+   aspect = "iso")
+@ 
+\end{column} \pause
+    \begin{column}{.5\textwidth}
+<<quakesPlot1,ref.label='quakesPlotCode1',echo=FALSE,fig.height=5.5,fig.width=5>>=
+@ 
+
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Standard plot customizations}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+      Now: location and magnitude
+<<quakesPlotCode2,eval=FALSE,echo=TRUE>>=
+xyplot(lat ~ long | cut(mag, 3), 
+   data = quakes,
+   groups =  cut(mag, 3),
+   aspect = "iso")
+@ 
+\end{column} 
+    \begin{column}{.5\textwidth}
+<<quakesPlot2,ref.label='quakesPlotCode2',echo=FALSE,fig.height=5.5,fig.width=5>>=
+@ 
+
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Standard plot customizations}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+      Now: location and magnitude
+<<quakesPlotCode3,eval=FALSE,echo=TRUE>>=
+xyplot(lat ~ long | cut(mag, 3), 
+   data = quakes,
+   groups =  cut(mag, 3),
+   aspect = "iso",
+   auto.key = 
+     list(text = c("L", "M", "H"),
+          space = "top"))
+@ 
+\end{column} 
+    \begin{column}{.5\textwidth}
+<<quakesPlot3,ref.label='quakesPlotCode3',echo=FALSE,fig.height=5.5,fig.width=5>>=
+@ 
+
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Standard plot customizations}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+      Now: location and magnitude
+<<quakesPlotCode4,eval=FALSE,echo=TRUE>>=
+xyplot(lat ~ long | cut(mag, 3), 
+   data = quakes,
+   groups =  cut(mag, 3),
+   aspect = "iso",
+   as.table = TRUE,
+   auto.key = 
+     list(text = c("L", "M", "H"),
+          space = "top"))
+@ 
+\end{column} 
+    \begin{column}{.5\textwidth}
+<<quakesPlot4,ref.label='quakesPlotCode4',echo=FALSE,fig.height=5.5,fig.width=5>>=
+@ 
+\end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Standard plot customizations}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+      Now: location and magnitude
+<<quakesPlotCode5,eval=FALSE,echo=TRUE>>=
+xyplot(lat ~ long | cut(mag, 3), 
+   data = quakes,
+   groups =  cut(mag, 3),
+   aspect = "iso",
+   as.table = TRUE,
+   auto.key = 
+     list(text = c("L", "M", "H"),
+          space = "top"),
+   type = c("p", "g"))
+@ 
+\end{column} 
+    \begin{column}{.5\textwidth}
+<<quakesPlot5,ref.label='quakesPlotCode5',echo=FALSE,fig.height=5.5,fig.width=5>>=
+@ 
+\end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{An elegant example: NMR spectra}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+``Naive'' plot leads to an inverted x axis:
+<<plotNMRCode1,echo=TRUE,eval=FALSE>>=
+xyplot(I ~ ppm | Origin, 
+  groups = Sample,
+  data = NMR.df, 
+  type = "l", 
+  layout = c(1,4), 
+  as.table = TRUE)
+@    
+    \end{column}
+    \begin{column}{.5\textwidth}
+      \par
+      \centerline{
+        \includegraphics[width=\textwidth]{NMR0}}
+    \end{column}
+  \end{columns}
+  
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{An elegant example: NMR spectra}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+... but this is easily remedied:
+<<plotNMRCode0,echo=TRUE,eval=FALSE>>=
+xyplot(I ~ ppm | Origin, 
+  groups = Sample,
+  data = NMR.df, 
+  type = "l", 
+  layout = c(1,4), 
+  as.table = TRUE,
+  xlim = 
+    rev(extendrange(NMR.df$ppm)))
+@    
+    \end{column}
+    \begin{column}{.5\textwidth}
+      \par
+      \centerline{
+        \includegraphics[width=\textwidth]{NMR1}}
+    \end{column}
+  \end{columns}
+  
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Banking: the \code{sunspots} data}
+  \begin{columns}[onlytextwidth]
+    \begin{column}{.35\textwidth}
+      \onslide<1->
+<<bankingExample1,echo=TRUE>>=
+myplot <- 
+  xyplot(sunspot.year ~
+           1700:1988, 
+         xlab = "", 
+         type = "l")
+@ 
+
+Default:\\ \code{aspect = "fill''}
+
+\onslide<2->
+<<bankingExample2,echo=TRUE>>=
+myplot2 <- 
+  update(myplot, 
+         aspect = "xy")
+@ 
+\end{column} \pause \hspace{1cm}
+    \begin{column}{.6\textwidth}
+      \onslide<1->
+<<bankingExamplePlot1,echo=FALSE,fig.height=4,out.width='\\textwidth'>>=
+myplot
+@ 
+\onslide<2->
+<<bankingExamplePlot2,echo=FALSE,fig.height=2,out.width='\\textwidth'>>=
+myplot2
+@ 
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{The \code{prepanel} and \code{panel} functions}
+  \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+      ``For the little things...\\
+      that take soooo much time''
+      \pause
+
+      \begin{itemize}[<+->]
+      \item \code{packet}: group of data points to be shown in one ``shingle''
+      \item \code{prepanel} function: determines rectangle to display the packet
+      \item \code{panel} function: determines how to display the packet
+      \end{itemize}
+      
+    \end{column} \pause
+    \begin{column}{.5\textwidth}
+      For many plot types there are basic ``panel'' functions:
+      
+      \code{panel.xyplot}, \code{panel.stripplot}, \code{panel.splom},
+      ...\\[3ex] 
+      
+      Many supporting plotting functions also have ``panel'' variants:
+      
+      \code{panel.points}, \code{panel.lines}, \code{panel.text}
+    \end{column}
+  \end{columns}  
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Building it up}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+<<quakesPlotCode0-a,ref.label='quakesPlotCode0',echo=TRUE,eval=FALSE>>=
+@ 
+    \end{column}
+    \begin{column}{.5\textwidth}
+<<quakesPlot0-a,ref.label='quakesPlotCode0',echo=FALSE,fig.height=5.5,fig.width=5>>=
+@ 
+
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Building it up}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+<<quakesPlotCode0-b,echo=TRUE,eval=FALSE>>=
+xyplot(lat ~ long,
+  data = quakes,
+  aspect = "iso",
+  panel = function(...) {
+    panel.xyplot(...)
+    })
+@ 
+    \end{column}
+    \begin{column}{.5\textwidth}
+<<quakesPlot0-b,ref.label='quakesPlotCode0-b',echo=FALSE,fig.height=5.5,fig.width=5>>=
+@ 
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Building it up}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+<<quakesPlotCode0-c,echo=TRUE,eval=FALSE>>=
+xyplot(lat ~ long,
+  data = quakes,
+  aspect = "iso",
+  panel = function(...) {
+    panel.xyplot(...)
+    panel.grid()
+  })
+@ 
+    \end{column}
+    \begin{column}{.5\textwidth}
+<<quakesPlot0-c,ref.label='quakesPlotCode0-c',echo=FALSE,fig.height=5.5,fig.width=5>>=
+@ 
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Building it up}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+<<quakesPlotCode0-d,echo=TRUE,eval=FALSE>>=
+xyplot(lat ~ long,
+  data = quakes,
+  aspect = "iso",
+  panel = function(...) {
+    panel.grid()
+
+    panel.xyplot(...)
+  })
+@ 
+    \end{column}
+    \begin{column}{.5\textwidth}
+<<quakesPlot0-d,ref.label='quakesPlotCode0-d',echo=FALSE,fig.height=5.5,fig.width=5>>=
+@ 
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Building it up}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+<<quakesPlotCode0-e,echo=TRUE,eval=FALSE>>=
+xyplot(lat ~ long,
+  data = quakes,
+  aspect = "iso",
+  panel = function(...) {
+    panel.grid(h=-1, v=-1)
+    
+    panel.xyplot(...)
+  })
+@ 
+    \end{column}
+    \begin{column}{.5\textwidth}
+<<quakesPlot0-e,ref.label='quakesPlotCode0-e',echo=FALSE,fig.height=5.5,fig.width=5>>=
+@ 
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Building it up}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+<<quakesPlotCode0-f,echo=TRUE,eval=FALSE>>=
+xyplot(lat ~ long,
+  data = quakes,
+  aspect = "iso",
+  panel = function(...) {
+    panel.grid(h=-1, v=-1)
+    panel.points(170, -30, 
+       cex = 2, col = "purple", 
+       pch = 19)
+    
+    panel.xyplot(...)
+  })
+@ 
+    \end{column}
+    \begin{column}{.5\textwidth}
+<<quakesPlot0-f,ref.label='quakesPlotCode0-f',echo=FALSE,fig.height=5.5,fig.width=5>>=
+@ 
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Building it up}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+<<quakesPlotCode0-g,echo=TRUE,eval=FALSE>>=
+xyplot(lat ~ long,
+  data = quakes,
+  aspect = "iso",
+  panel = function(...) {
+    panel.grid(h=-1, v=-1)
+    panel.points(170, -30, 
+       cex = 2, col = "purple", 
+       pch = 19)
+    panel.text(170, -30,
+       "Hi there!",
+       pos = 3)
+    
+    panel.xyplot(...)
+  })
+@ 
+    \end{column}
+    \begin{column}{.5\textwidth}
+<<quakesPlot0-g,ref.label='quakesPlotCode0-g',echo=FALSE,fig.height=5.5,fig.width=5>>=
+@ 
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{The \code{latticeExtra} package}
+    \begin{columns}[onlytextwidth]
+    \begin{column}[t]{.5\textwidth}
+      Normal plot:
+<<carsExample2,echo=TRUE,fig.width=6, fig.height=5,out.width='5cm'>>=
+(pcars <- 
+   xyplot(Price ~ EngineSize | 
+     AirBags + Cylinders, 
+     data = Cars93,
+     subset = Cylinders %in% 
+       c(4,6)))
+@       
+    \end{column} \pause
+    \begin{column}[t]{.5\textwidth}
+      Now move one set of labels to the side...\\[4ex]
+<<carsExample3,echo=TRUE,fig.width=6, fig.height=5,out.width='5cm'>>=
+(pcars2 <- 
+  useOuterStrips(pcars))
+@       
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Combine axis ranges...}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.5\textwidth}
+      Every packet its own axes...
+<<carsExample4,echo=TRUE, fig.width=6,fig.height=5,out.width='5cm'>>=
+(pcars3 <- 
+   update(pcars2, 
+          scale = "free"))
+@ 
+    \end{column}\pause
+    \begin{column}{.5\textwidth}
+      Combined in a meaningful way\\[2ex]
+      
+<<carsExample5,echo=TRUE, fig.width=6,fig.height=5,out.width='5cm'>>=
+combineLimits(pcars3)
+@ 
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\section{Conclusion}
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Conclusions}
+  \begin{columns}[onlytextwidth]
+    \begin{column}{.65\textwidth}
+      \begin{itemize}[<+->]
+      \item You \alert{can} do quite complicated things...
+      \item Resist!
+      \item Only if you \alert{must}
+      \item Which means: if it makes the plot better
+      \item Not treated:
+        \begin{itemize}[<.->]
+        \item themes
+        \item grouping (e.g., \code{panel.superpose} instead of
+          \code{panel.xyplot}) 
+        \item labels and legends
+        \item axis coordinates and annotation
+        \item ...
+        \end{itemize}
+      \end{itemize}
+      
+    \end{column}
+
+    \begin{column}{.35\textwidth}
+<<volcanoPlot,echo=FALSE,fig.width=5, fig.height=4>>=
+data(volcano)
+panel.3d.contour <- function(x, y, z, rot.mat, distance, nlevels = 20,
+                             zlim.scaled, ...) { 
+  add.line <- trellis.par.get("add.line")
+  panel.3dwire(x, y, z, rot.mat, distance, zlim.scaled = zlim.scaled,
+               ...) 
+  clines <- contourLines(x, y, matrix(z, nrow = length(x), byrow = TRUE), 
+                         nlevels = nlevels) 
+  for (ll in clines) {
+    m <- ltransform3dto3d(rbind(ll$x, ll$y, zlim.scaled[2]), rot.mat, distance) 
+    panel.lines(m[1,], m[2,], col = add.line$col, 
+                lty = add.line$lty, lwd = add.line$lwd)
+  } 
+}
+wireframe(volcano, zlim = c(90, 250), nlevels = 10,
+          aspect = c(61/87, .3), panel.aspect = 0.6, 
+          panel.3d.wireframe = "panel.3d.contour", 
+          shade = TRUE, screen = list(z = 20, x = -60))
+@ 
+\end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]
+  \frametitle{Acknowledgements}
+    \begin{columns}[onlytextwidth]
+    \begin{column}{.3\textwidth}
+      \par
+      \centerline{\includegraphics[width=\textwidth]{sarkar.jpg}}
+      
+    \end{column} \pause \hspace{5mm}
+    \begin{column}{.66\textwidth}
+      \begin{itemize}[<+->]
+      \item \url{lmdvr.r-forge.r-project.org}
+        contains \alert{all} code to reproduce the book figures
+      \item \url{lattice.r-forge.r-project.org}: vignettes,
+        code, ...
+      \end{itemize}
+      
+      \vspace{4ex}
+      \pause
+      
+      \par
+        \centerline{\includegraphics[width=2.5cm]{google.png}}
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+
+\end{document}

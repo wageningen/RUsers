@@ -1,0 +1,325 @@
+\def\beamer@wurbeamer@version{0.3.0ron}
+\ProvidesPackage{beamerthemewurnew}
+\RequirePackage{beamerbasethemes}[2004/10/07]
+\RequirePackage{pgf}
+
+%% esthetic changes RW 
+%% Sept 18 2014, the title page
+%% Sept 19 2014, inclusion of the three WUR images on title page
+
+%-------------------------------------------------------------------------------
+%                                                               detect PDF-LaTeX
+\newif\ifpdf
+\ifx\pdfoutput\undefined\pdffalse\else\pdftrue\fi
+
+%-------------------------------------------------------------------------------
+%                                                                   font options
+\RequirePackage[onlymath]{beamerfontthemeserif}
+\RequirePackage[T1]{fontenc}
+\RequirePackage{lmodern}
+%\renewcommand{\encodingdefault}{T1}
+\setbeamerfont{title}{size=\Large}
+\setbeamerfont{subtitle}{size=\large}
+\setbeamerfont{author}{size = \large}
+\setbeamerfont{institute}{size=\small}
+\setbeamerfont{section in toc}{size=\normalsize}
+\setbeamerfont{subsection in toc}{size=\small}
+%\def\sfdefault{verdana}
+
+\RequirePackage{microtype}
+\DisableLigatures{encoding = *, family = * }
+
+\ProcessOptionsBeamer
+
+%-------------------------------------------------------------------------------
+%                                                             basic layout stuff
+% bar height
+\newlength\barheight\setlength\barheight{\paperheight}
+\divide\barheight by 12
+% logobar height
+\newlength\logobarheight\setlength\logobarheight{\barheight}
+\newlength\logosep\setlength\logosep{0.5\logobarheight}
+% pictsize
+\newlength\pictsize\setlength\pictsize{\textwidth}
+\divide\pictsize by 4
+
+%-------------------------------------------------------------------------------
+%                                                                  color options
+\definecolor{wurlightblue}{HTML}{6AADE4}
+\definecolor{wurgreen}{HTML}{34B233}
+\definecolor{wuryellow}{HTML}{EAB200}
+\definecolor{wurdarkgray}{HTML}{A59D95}
+\definecolor{wurlightgray}{HTML}{D5D2CA}
+\definecolor{wurazure}{HTML}{005172}
+\definecolor{wurorange}{HTML}{FF7900}
+\definecolor{wursignblue}{HTML}{00549F}
+\definecolor{wurwhite}{HTML}{FFFFFF}
+\definecolor{wurblack}{HTML}{000000}
+\definecolor{wurlogobarcolor}{HTML}{FFFFFF}
+\definecolor{lightgray}{HTML}{EEEEEE}
+
+\setbeamercolor*{normal text}{fg=wurazure,bg=wurwhite} % All text text
+\setbeamercolor*{alerted text}{fg=wurgreen}	       % Alerted text
+%%\setbeamercolor*{structure}{parent=normal text}      %bullets in itemize
+\setbeamercolor*{math text}{fg=wurlightblue}	% Math, inline and displ
+\setbeamercolor*{block title}{bg=wurdarkgray,fg=wurwhite} % colors in the title of a block
+\setbeamercolor*{block body}{bg=wurlightgray,fg=wurazure} % colors in the body of a block
+\setbeamercolor*{section in head/foot}{parent=normal text} % Current section in navigation bar
+\setbeamercolor*{section in head/foot shaded}{parent=normal text} % Non active section in navigation bar
+\setbeamercolor*{section number projected}{bg=wurazure,fg=wurazure} % toc section color
+\setbeamercolor*{subsection number projected}{bg=wurazure,fg=wurazure} % toc subsection color
+\setbeamercolor*{headline}{parent=normal text}
+
+% white sheet colors
+\def\whitesheets{
+  \setbeamercolor*{normal text}{fg=wurazure,bg=wurwhite} % All text text
+  \setbeamercolor*{alerted text}{fg=wurgreen}	% Alerted text
+  \setbeamercolor*{block title}{bg=wurazure,fg=wurwhite} % colors in the title of a block
+  \setbeamercolor*{block body}{bg=wurlightgray,fg=wurazure} % colors in the body of a block
+  \setbeamercolor*{section number projected}{bg=wurazure,fg=wurazure} % toc section color
+  \setbeamercolor*{subsection number projected}{bg=wurazure,fg=wurazure} % toc subsection color
+  \pgfdeclareimage[height=.7\logobarheight]{WU-logo}{WUR_RGB_standard}
+  \usebeamercolor[fg]{normal text} 
+}
+
+% blue sheet colors
+\def\bluesheets{
+\mode<presentation>{
+  \setbeamercolor*{normal text}{fg=wurwhite,bg=wurlightblue}
+  \setbeamercolor*{alerted text}{fg=wurazure}
+  \setbeamercolor*{block title}{bg=wurazure,fg=wurwhite}
+  \setbeamercolor*{block body}{bg=wurwhite,fg=wurazure}
+  \setbeamercolor*{section number projected}{bg=wurwhite,fg=wurwhite}
+  \setbeamercolor*{subsection number projected}{bg=wurwhite,fg=wurwhite}
+  \pgfdeclareimage[height=.7\logobarheight]{WU-logo}{wu}
+  \usebeamercolor[fg]{normal text} 
+  }
+\mode<handout>{
+  \whitesheets
+}
+}
+
+% green sheet colors
+\def\greensheets{
+\mode<presentation>{
+  \setbeamercolor*{normal text}{fg=wurwhite,bg=wurgreen}
+  \setbeamercolor*{alerted text}{fg=wurazure}
+  \setbeamercolor*{block title}{bg=wurlightblue,fg=wurwhite}
+  \setbeamercolor*{block body}{bg=wurwhite,fg=wurazure}
+  \setbeamercolor*{section number projected}{bg=wurwhite,fg=wurwhite}
+  \setbeamercolor*{subsection number projected}{bg=wurwhite,fg=wurwhite}
+  \pgfdeclareimage[height=.7\logobarheight]{WU-logo}{wu}
+  \usebeamercolor[fg]{normal text} 
+  }
+\mode<handout>{
+  \whitesheets
+}
+}
+
+% gray sheet colors
+\def\graysheets{
+\mode<presentation>{
+  \setbeamercolor*{normal text}{fg=wurwhite,bg=wurdarkgray}
+  \setbeamercolor*{alerted text}{fg=wurazure}
+  \setbeamercolor*{block title}{bg=wurlightblue,fg=wurwhite}
+  \setbeamercolor*{block body}{bg=wurwhite,fg=wurazure}
+  \setbeamercolor*{section number projected}{bg=wurwhite,fg=wurwhite}
+  \setbeamercolor*{subsection number projected}{bg=wurwhite,fg=wurwhite}
+  \pgfdeclareimage[height=.7\logobarheight]{WU-logo}{wu}
+  \usebeamercolor[fg]{normal text} 
+  }
+\mode<handout>{
+  \whitesheets
+}
+}
+
+% white sheet option
+\DeclareOptionBeamer{white}[]{\whitesheets}
+
+% blue sheet option
+\DeclareOptionBeamer{blue}[]{\bluesheets}
+
+% green sheet option
+\DeclareOptionBeamer{green}[]{\greensheets}
+
+% gray sheet option
+\DeclareOptionBeamer{gray}[]{\graysheets}
+
+\mode<handout>{
+    \setbeamercolor{background canvas}{bg=lightgray}
+}
+\ProcessOptionsBeamer
+
+%-------------------------------------------------------------------------------
+%                                                                    itemization
+%%\setbeamertemplate{itemize item}{\scriptsize\raise1.25pt\hbox{$\blacksquare$}}
+%%\setbeamertemplate{itemize subitem}{\hbox{\donotcoloroutermaths$\bullet$}}
+%%\setbeamertemplate{itemize subsubitem}{\hbox{\donotcoloroutermaths$\bullet$}}
+%-------------------------------------------------------------------------------
+%                                                              table of contents
+\setbeamertemplate{subsection in toc}{
+  \hbox{
+    \hspace*{\leftmargini}
+    \usebeamercolor[bg]{subsection number projected}\hbox{\donotcoloroutermaths$\bullet$}
+    \usebeamercolor[fg]{subsection number projected}\usebeamerfont{subsection in toc}\inserttocsubsection
+  }
+}
+
+\setbeamertemplate{section in toc}{
+  \hbox{
+    \usebeamercolor[bg]{section number projected}\scriptsize\raise1.25pt\hbox{$\blacksquare$}
+    \usebeamercolor[fg]{section number projected}\usebeamerfont{section in toc}\inserttocsection
+  }
+}
+
+
+%-------------------------------------------------------------------------------
+%                                                                         blocks
+\setbeamertemplate{blocks}[default]
+%%\setbeamercovered{transparent}
+
+%-------------------------------------------------------------------------------
+%                                                                       handouts
+\mode<handout>{
+  \RequirePackage{pgfpages}
+  \pgfpagesuselayout{4 on 1}[a4paper,landscape, border shrink=5mm]
+}
+%
+
+%------------------------------------------------------------------------------
+%                                                                    picture bar
+
+\newcommand{\custompic}[1]{#1}
+
+%% the three standard images we should plot from right to left...
+\titlegraphic{%
+  \centerline{%
+    \includegraphics[height=\pictsize,width=\pictsize]{\custompic{\@empty}}%
+    \hskip\pictsize\includegraphics[height=\pictsize,width=\pictsize]{grain.png}%
+    \hskip-1.5\pictsize\includegraphics[height=\pictsize,width=\pictsize]{tree.png}%
+    \hskip-1.5\pictsize\includegraphics[height=\pictsize,width=\pictsize]{people.png}}}
+
+%-------------------------------------------------------------------------------
+%																	title page
+\setbeamertemplate{title page}
+{
+  %%\vskip.5pc
+  \usebeamerfont{title}\usebeamercolor[fg]{title}\inserttitle
+      
+  {\ifx\insertsubtitle\@empty\else{\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\par\vskip1pc \insertsubtitle\par }\fi}
+  
+  \vskip1pc
+  \usebeamerfont{author}\usebeamercolor[fg]{author}\insertauthor
+  
+  {\ifx\insertdate\@empty\else{\usebeamerfont{institute}\usebeamercolor[fg]{date}\par\vskip1pc\insertdate}\fi}
+  
+  % Institution
+  \usebeamerfont{institute}\usebeamercolor[fg]{institute}\insertinstitute
+  
+  \vskip2pc
+  \inserttitlegraphic
+}
+
+%------------------------------------------------------------------------------
+%                                                                  section page
+%\def\sectionpic#1{\pgfdeclareimage[height=2\pictsize,width=2\pictsize,interpolate=true]{sectpic}{#1}}
+%
+\setbeamertemplate{section page}{
+\vskip-1pc
+\hskip1.2\pictsize\hbox to 0pt{\vbox to 0pt{\pgfuseimage{sectpic}}}
+\vskip-2pc
+\raisebox{-.8pc}{\rule{1.2\pictsize}{.4pt}}\par
+\begin{minipage}[t]{1.2\pictsize}
+\flushleft
+\usebeamerfont{title}\usebeamercolor[fg]{title}\insertsection
+\end{minipage}
+\vskip1pc
+\rule{1.2\pictsize}{.4pt}
+\vskip0pt plus 1filll
+}
+%-------------------------------------------------------------------------------
+%                                                                    frame title
+\setbeamertemplate{frametitle}{%
+  \vskip-1.2pc
+  \rule{\textwidth}{.4pt}\par
+  \makebox[\textwidth][l]{\usebeamerfont{title}\usebeamercolor[fg]{title}\insertframetitle}
+  \vskip-5pt
+  \rule{\textwidth}{.4pt}
+} 
+%-------------------------------------------------------------------------------
+%																		headline
+\defbeamertemplate{headline}{navigation}{
+  \usebeamercolor[bg]{headline}
+  \vskip6pt\tiny\insertsectionnavigationhorizontal{\textwidth}{\hskip0pt plus1filll}{\hskip5pt}
+}
+\def\navon{\setbeamertemplate{headline}[navigation]}
+\def\navoff{\setbeamertemplate{headline}[default]}
+
+%-------------------------------------------------------------------------------
+%                                                                       logo bar
+\setbeamerfont{logobar}{}
+
+% these are availabe to users for constructing their logo
+\def\wulogo{\hbox{\vbox to \logobarheight{\vfill\hbox{\pgfuseimage{WU-logo}}\vfill}}}
+\def\nwologo{\hbox{\vbox to \logobarheight{\vfill\hbox{\pgfuseimage{NWO-logo}}\vfill}}}
+\def\stwlogo{\hbox{\vbox to \logobarheight{\vfill\hbox{\pgfuseimage{STW-logo}}\vfill}}}
+
+% Initially, have an empty logo bar
+\let\logobarlogo=\relax
+
+% routine to add a logo
+\def\addlogo#1{%
+  \ifx\logobarlogo\relax
+    \def\logobarlogo{#1}
+  \else
+    \g@addto@macro{\logobarlogo}{\hspace{\logosep}}
+    \g@addto@macro{\logobarlogo}{#1}
+  \fi
+  }
+ 
+
+
+% routine to reset the logo bar (i.e. for using the Alterra logo instead
+\def\resetlogo{\let\logobarlogo=\relax}
+
+\def\logobartext#1{\gdef\@logobartext{#1}}
+\def\@logobartext{}
+
+
+\def\buildlogobar{%
+  \noindent\makebox[0.95\paperwidth]{%
+    \hspace*{\logosep}
+    \logobarlogo
+    \ifx\logobarlogo\relax\else\hspace{\logosep}\fi
+    \hfill
+    \hbox{\vbox to \logobarheight{\vfill\hbox{{\usebeamerfont{logobar}\usebeamercolor[fg]{logobar}\@logobartext}}\vfill}}%
+    \hspace*{\logosep}
+    \hfill
+    \usebeamercolor[fg]{page number in head/foot}}}  %\insertframenumber/\inserttotalframenumber
+
+
+
+\setbeamertemplate{footline}{
+	\buildlogobar
+}
+
+
+%-------------------------------------------------------------------------------
+%                                                                          setup
+
+% Disable the navigation buttons
+\setbeamertemplate{navigation symbols}{}
+\navon
+
+\setbeamersize{text margin right=1pc}
+\setbeamersize{text margin left=1pc}
+\setbeamersize{sidebar width left=1pc}
+\setbeamersize{sidebar width right=1pc}
+
+% Use the Wageningen University logo by default
+\addlogo{\wulogo}
+
+%\addlogo{\leklogo}
+%\addlogo{\hortimaxlogo}
+%\addlogo{\stwlogo}
+\endinput
