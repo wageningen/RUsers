@@ -16,19 +16,19 @@ g + geom_density()
 g + geom_histogram()
 g + geom_histogram(bins = 10, aes(y= ..density..))
 g + geom_histogram(bins = 10, aes(y= ..density..)) + geom_density()
-g + geom_histogram(bins = 10, aes(y= ..density..)) + geom_density() 
 g + geom_histogram(bins = 10) + geom_density(aes(y = ..count..*3))
 
 # create the frame - TWO VARIABLE ####
 g <- ggplot(data = mpg, aes(y = cty, x = hwy))
 g + geom_point()
 g + geom_point(aes(color = year), alpha = 0.5, cex = 3)
+g + geom_point(aes(color = as.factor(year)), alpha = 0.5, cex = 3)
 g + geom_bin2d()
 g + geom_hex()
 # geom_point(position = "jitter"). 
 # It adds a small amount of random variation to the location of each point, same than
 g + geom_jitter()
-g + geom_jitter(aes(color = year), alpha = 0.5, cex = 3)
+g + geom_jitter(aes(color = as.factor(year)), alpha = 0.5, cex = 3)
 
 # x = Discrete, y = Continuous
 g <- ggplot(data = mpg, aes(y = cty, x = class))
@@ -59,21 +59,22 @@ gg + scale_fill_grey()
 gg + theme(text = element_text(family = "serif")) 
 # add title and labels
 gg + labs(title = "Fuel economy of cars", x = "Class",
-          y = expression("Consumption / km gal"^{-1})) +
+          y = expression("Consumption / miles gal"^{-1})) +
   theme(text = element_text(family = "serif")) 
 
 # Extra tools ####
 # extra themes
-library(ggthemes)
+require(ggthemes)
 gg + theme_economist()
 
 # Complex plots
 require("GGally")
 data(flea)
+str(flea)
 ggscatmat(flea, columns = 2:7, color="species", alpha=0.3)
 
 # Interactive plots
-require(plotly)
+require(plotly) #thanks Martin Mulder
 ggplotly(gg)
 ## Spatial plot ####
 require(sp)
@@ -124,18 +125,6 @@ g <- ggplot(...)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 # A hint for solutions ####
 # define the data and mapping (x, y and one heavy metal as color or size)
 g <- ggplot(data = meuse, 
@@ -155,3 +144,45 @@ g + ggplot(data = meuse.df, aes(x = , y = , color = values))
 g + facet_grid(soil ~ variable)
 
 
+
+
+
+
+
+
+# Possible solutions ####
+# 1) 
+# we want to show in a figure how cadmium, copper, lead and zinc vary given 
+# distance and elevation. Take into account that the scales of the heavy metals 
+# are different among them.
+
+g <- ggplot(data = meuse, aes(x = dist, y = elev,
+                                 color = cadmium, size = copper))
+g + geom_point()
+
+# 2)
+# Now, we want to see the same, but also given soil type and or flod frequency.
+
+g + geom_point() + facet_grid(~soil)
+g + geom_point() + facet_grid(~ffreq)
+g + geom_point() + facet_grid(~soil + ffreq)
+g + geom_point() + facet_grid(soil ~ ffreq)
+
+meuse.df <- reshape::melt(data = meuse,
+                          id.vars = c("soil", "ffreq", "dist", "elev"),
+                          measure.vars = c("cadmium", "copper", "lead", "zinc"))
+
+g <- ggplot(data = meuse.df, aes(x = dist, y = value, color = elev))
+
+gg <- g + facet_wrap(soil ~ variable,scales = "free_y") +
+  geom_point() 
+gg
+# 3) 
+# Add title and labels to axes, and save as .png format image.
+
+png(filename = "/home/marcos/Desktop/png.png",
+    res = 300, width = 2500,height = 2000)
+gg + labs(title = "Heavy metals near Meuse river",
+          x = "Distance to the river",
+          y = "Concentration")
+dev.off()
