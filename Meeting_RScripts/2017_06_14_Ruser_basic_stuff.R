@@ -1,5 +1,5 @@
 ## >> In R-studio, do Edit -> Folding -> Collapse all  (or Alt-O)
-## works because four or more #### at and of comment headers 
+## works because four or more #, #### at end of comment headers 
 
 #### Script for R user meeting, June 14th, 2017 ####
 ## "Basic data exploration, a graph with two y-axes, loops and functions"
@@ -427,7 +427,7 @@ summary(vn_discoveries)
 table(vn_discoveries)
 
 hist(vn_discoveries)  
-## Not wthat we want
+## Not what we want
 
 plot(
   x    = table(vn_discoveries),
