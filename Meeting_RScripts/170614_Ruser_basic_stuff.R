@@ -241,14 +241,12 @@ for(n_iteration in vn_iteration_number)
 ## adding the results of a loop to a vector
 
 vn_squared <- vector(mode="numeric", length=0)
-## first you have to define a empty
+## first define an empty vector
 
 for(n_iteration in vn_iteration_number) 
 {
   n_squared <- n_iteration^2
   cat("\n", n_iteration, " ", n_squared)
-  ## cat is a sophisticed version of "print"
-  ## the string \n means: new line
   vn_squared <- c(vn_squared, n_squared)
 }
 
