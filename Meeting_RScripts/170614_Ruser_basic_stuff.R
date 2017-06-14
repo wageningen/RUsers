@@ -214,9 +214,8 @@ mtext(text = 'pressure [mm] log scale',
 
 grid( col = rgb(1,0,0, alpha=0.1) )
 
-
-
 remove(df_pressure)
+
 #### Loops and vectorized functions ####
 
 ## I borrowed from 
