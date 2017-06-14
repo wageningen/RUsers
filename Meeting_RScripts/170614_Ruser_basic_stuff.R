@@ -14,7 +14,7 @@
 ## browseURL("http://www.ams.org/publications/authors/books/postpub/amstext-13")
 ## and many other sources
 
-#### Load a build-in dataset with continous data ####
+#### Load a build-in dataset with continuous data ####
 
 data(ToothGrowth)
 ?ToothGrowth
