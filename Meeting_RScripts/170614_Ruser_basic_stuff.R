@@ -76,6 +76,7 @@ vb_dose_is_05
 df_tg[vb_dose_is_05, ] #  select all rows with dose = 0.5, all columns
 
 remove(vb_dose_is_05)
+
 #### Explore data with an histogram ####
 hist(df_tg$len)
 ## the bin width influences the appearance
