@@ -349,8 +349,11 @@ df_farms$farm_type <- sapply(X   = df_farms$farm_name,
 
 return_descr <- function(x)
 {
-    if(x == 1)
+    if(x == 1) {
       str_descr <- "Farm type one"
+      # another command
+      # and yet another command
+      }
     else if(x == 2)
       str_descr <- "Farm type two"
     else if(x == 3)
