@@ -1,0 +1,24 @@
+---
+title: "RMarkdown Minimal Example"
+author: "Pie Bear"
+date: "19 August 2016"
+output: html_document
+---
+
+## Markdown 
+
+This is an **RMarkdown** document, originating from  [here](http://www.geo.uzh.ch/microsite/reproducible_research/post/rr-r-publication/). You can write text in **bold** or _cursive_, include [links](http://geo.uzh.ch) or add inline formulae $y=x+3$ (following Latex formulae markup)
+
+## Markdown with R code
+
+```{r}
+d  <- data.frame(participants=1:10,height=rnorm(10,sd=30,mean=170)) 
+summary(d)
+```
+you can include R elements inline and generate plots:
+
+```{r chunk_name}
+plot(d)
+```
+
+There were `r nrow(d)` participants.
