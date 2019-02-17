@@ -8,6 +8,13 @@ View(mpg)
 ?iris
 View(iris)
 
+ggplot(mpg, aes(hwy, cty)) +
+    geom_point(aes(colour=cyl)) +
+    geom_smooth(method="lm") +
+    coord_cartesian() +
+    scale_colour_gradient() +
+    theme_bw()
+
 # create the frame - ONE VARIABLE ####
 g <- ggplot(data = mpg, aes(x = cty))
 g
@@ -94,6 +101,44 @@ png(filename = "/<replace with your folder name>/png.png",
     res = 300, width = 2000,height = 2000)
 g + geom_point() + coord_equal()
 dev.off()
+
+# sf
+require(sf)
+nc <- st_read(system.file("shape/nc.shp", package="sf"))
+plot(nc)
+ggplot(nc, aes(fill=AREA)) + geom_sf()
+
+# ggmap
+require(ggmap)
+state = st_bbox(nc)
+names(state) = c("left", "bottom", "right", "top")
+us_map = get_stamenmap(state, zoom = 7, maptype = "toner-lite")
+ggmap(us_map)
+
+# sf + ggmap
+# Bug: https://github.com/dkahle/ggmap/issues/160 Workaround:
+ggmap_bbox <- function(map) {
+  if (!inherits(map, "ggmap")) stop("map must be a ggmap object")
+  # Extract the bounding box (in lat/lon) from the ggmap to a numeric vector, 
+  # and set the names to what sf::st_bbox expects:
+  map_bbox <- setNames(unlist(attr(map, "bb")), 
+                       c("ymin", "xmin", "ymax", "xmax"))
+
+  # Coonvert the bbox to an sf polygon, transform it to 3857, 
+  # and convert back to a bbox (convoluted, but it works)
+  bbox_3857 <- st_bbox(st_transform(st_as_sfc(st_bbox(map_bbox, crs = 4326)), 3857))
+
+  # Overwrite the bbox of the ggmap object with the transformed coordinates 
+  attr(map, "bb")$ll.lat <- bbox_3857["ymin"]
+  attr(map, "bb")$ll.lon <- bbox_3857["xmin"]
+  attr(map, "bb")$ur.lat <- bbox_3857["ymax"]
+  attr(map, "bb")$ur.lon <- bbox_3857["xmax"]
+  map
+}
+
+nc_wgs84 = st_transform(nc, 3857)
+ggmap(ggmap_bbox(us_map)) + geom_sf(data=nc_wgs84, aes(fill=AREA), alpha=0.5, inherit.aes = FALSE)
+
 
 # Excercercise ####
 meuse <- as.data.frame(meuse)
