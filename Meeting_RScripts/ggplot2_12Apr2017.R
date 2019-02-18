@@ -8,11 +8,13 @@ View(mpg)
 ?iris
 View(iris)
 
+# Example from the slides
+qplot(hwy, cty, colour=cyl, data=mpg, geom="point") # geom is optional
 ggplot(mpg, aes(hwy, cty)) +
     geom_point(aes(colour=cyl)) +
     geom_smooth(method="lm") +
-    coord_cartesian() +
-    scale_colour_gradient() +
+    coord_cartesian() +       # Already default
+    scale_colour_gradient() + # Already default
     theme_bw()
 
 # create the frame - ONE VARIABLE ####
@@ -83,64 +85,48 @@ ggscatmat(flea, columns = 2:7, color="species", alpha=0.3)
 # Interactive plots
 require(plotly) #thanks Martin Mulder
 ggplotly(gg)
-## Spatial plot ####
-require(sp)
-demo(meuse)
 
-g <- ggplot(data = as.data.frame(meuse),
-            mapping = aes(x = x, y = y, color = zinc, size = copper))  
-g
-g + geom_point() 
-g + geom_point() + coord_equal()
 
-# Other options to plot spatial data https://edzer.github.io/sp/
+## DM: Spatial plot ####
 
-# save a plot as image ####
-# change / by \ depending your operative system
-png(filename = "/<replace with your folder name>/png.png",
-    res = 300, width = 2000,height = 2000)
-g + geom_point() + coord_equal()
-dev.off()
-
-# sf
+# sf - vectors
 require(sf)
+# North Carolina counties
 nc <- st_read(system.file("shape/nc.shp", package="sf"))
-plot(nc)
 ggplot(nc, aes(fill=AREA)) + geom_sf()
 
-# ggmap
+# ggmap - basemap
 require(ggmap)
-state = st_bbox(nc)
-names(state) = c("left", "bottom", "right", "top")
-us_map = get_stamenmap(state, zoom = 7, maptype = "toner-lite")
+# Download a map of the area of North Carolina
+us_map = get_map(location = unname(st_bbox(nc)), source = "stamen", zoom=7)
 ggmap(us_map)
 
 # sf + ggmap
-# Bug: https://github.com/dkahle/ggmap/issues/160 Workaround:
-ggmap_bbox <- function(map) {
-  if (!inherits(map, "ggmap")) stop("map must be a ggmap object")
-  # Extract the bounding box (in lat/lon) from the ggmap to a numeric vector, 
-  # and set the names to what sf::st_bbox expects:
-  map_bbox <- setNames(unlist(attr(map, "bb")), 
-                       c("ymin", "xmin", "ymax", "xmax"))
+ggmap(us_map) + geom_sf(data=nc, aes(fill=AREA), inherit.aes=FALSE, alpha=0.5)
 
-  # Coonvert the bbox to an sf polygon, transform it to 3857, 
-  # and convert back to a bbox (convoluted, but it works)
-  bbox_3857 <- st_bbox(st_transform(st_as_sfc(st_bbox(map_bbox, crs = 4326)), 3857))
-
-  # Overwrite the bbox of the ggmap object with the transformed coordinates 
-  attr(map, "bb")$ll.lat <- bbox_3857["ymin"]
-  attr(map, "bb")$ll.lon <- bbox_3857["xmin"]
-  attr(map, "bb")$ur.lat <- bbox_3857["ymax"]
-  attr(map, "bb")$ur.lon <- bbox_3857["xmax"]
-  map
-}
-
-nc_wgs84 = st_transform(nc, 3857)
-ggmap(ggmap_bbox(us_map)) + geom_sf(data=nc_wgs84, aes(fill=AREA), alpha=0.5, inherit.aes = FALSE)
+# raster
+require(raster)
+# Minimum temperature of January
+MinTemp = getData('worldclim', var='tmin', res=0.5, lon=st_bbox(nc)$xmin, lat=st_bbox(nc)$ymin)
+# Crop and convert to a data.frame as ggplot() does not handle `Raster`s natively
+MTDF = as.data.frame(crop(MinTemp[[1]], nc), xy = TRUE)
+ggplot() +
+  geom_raster(data = MTDF, aes(x = x, y = y, fill=tmin1_13)) + 
+  coord_quickmap()
+# Alternatively, should be possible to use `stars` instead of `raster` with `geom_stars()` (which is a wrapper for above)
 
 
-# Excercercise ####
+# All together in one plot
+ggmap(us_map) +
+    geom_raster(data = MTDF, aes(x = x, y = y, fill=tmin1_13), alpha=0.5) +
+    geom_sf(data=nc, aes(colour=AREA), inherit.aes=FALSE, alpha=0) +
+    scale_fill_gradientn(colours = terrain.colors(10))
+
+# Save the plot into a file
+ggsave("nc.png")
+system("xdg-open nc.png") # Open image in image viewer (on Linux)
+    
+## Exercise ####
 meuse <- as.data.frame(meuse)
 str(meuse)
 # labels
