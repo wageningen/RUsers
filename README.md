@@ -22,6 +22,7 @@ Wageningen RUser group.
 
 Contact us at r-users@wur.nl
 
-Ps - other R-related groups in Wageningen:
+---------------------------
+Ps--other R-related groups in Wageningen:
 + [R-Ladies Wageningen](https://www.meetup.com/nl-NL/rladies-wageningen/), also on [FB](https://www.facebook.com/groups/459686011235479/), started from a gender- and minority perspective
 + [R Academy Wageningen](https://www.racademywageningen.com), also on [FB](https://www.facebook.com/groups/Racademywageningen/), commecially driven.
