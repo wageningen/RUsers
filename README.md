@@ -11,14 +11,17 @@ We ran a survey about the most interesting topics in our group. [Here](https://g
 
 ***Would you like to become a contributor?*** edit the Contributors file [here](https://github.com/wageningen/RUsers/blob/master/Contributors.md) and we will add you to [this list](https://github.com/wageningen/RUsers/settings/collaboration).
 
-**Join our chat room** [here](https://gitter.im/R-users/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
 For those that are not familiar with GitHub, check the [GitHub guide](https://guides.github.com/)
 
 This text is written in [Markdown format](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
 
-Happy code!
+Happy coding!
 
 Wageningen RUser group.
 
 Contact us at r-users@wur.nl
+
+Ps - other R-related groups in Wageningen:
++ [R-Ladies Wageningen](https://www.meetup.com/nl-NL/rladies-wageningen/), also on [FB](https://www.facebook.com/groups/459686011235479/), started from a gender- and minority perspective
++ [R Academy Wageningen](https://www.racademywageningen.com), also on [FB](https://www.facebook.com/groups/Racademywageningen/), commecially driven.
