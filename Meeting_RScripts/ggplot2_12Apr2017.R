@@ -22,6 +22,7 @@ g <- ggplot(data = mpg, aes(x = cty))
 g
 # now, add layers
 g + geom_density()
+g + stat_density()
 g + geom_histogram()
 g + geom_histogram(bins = 10, aes(y= ..density..))
 g + geom_histogram(bins = 10, aes(y= ..density..)) + geom_density()
@@ -109,7 +110,8 @@ require(raster)
 # Minimum temperature of January
 MinTemp = getData('worldclim', var='tmin', res=0.5, lon=st_bbox(nc)$xmin, lat=st_bbox(nc)$ymin)
 # Crop and convert to a data.frame as ggplot() does not handle `Raster`s natively
-MTDF = as.data.frame(crop(MinTemp[[1]], nc), xy = TRUE)
+# Also divide by 10 because worldclim stores temperature as degrees C * 10
+MTDF = as.data.frame(crop(MinTemp[[1]], nc)/10, xy = TRUE)
 ggplot() +
   geom_raster(data = MTDF, aes(x = x, y = y, fill=tmin1_13)) + 
   coord_quickmap()
