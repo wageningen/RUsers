@@ -3,12 +3,12 @@
 ### by Joost van Heerwaarden
 ###
 ### Adjusted by Luc Steinbuch, for presentation February 14th, 2018
+### Further adjusted by Dainius Masiliunas, 2019
 ### level: basic
 ###
 ### Used dataset is related to paper 
 ### "Genome-wide association study of 107 phenotypes in Arabidopsis thaliana inbred lines."
 browseURL("http://doi.org/10.1038/nature08800")
-
 
 
 ####### Load and explore data ####
@@ -87,6 +87,68 @@ My.mean(tmp)
 ## Note that a function is also an object
 objects()
 
+## Conditionals
+
+## if
+
+# Define a function that combines two values based on a strategy
+combine_using = function(x, y, using="sum")
+{
+    # If: if the condition evaluates TRUE, run the following
+    if (using == "sum") {
+        return(x + y)
+    } else { # If it does not, run the following
+        stop(paste("Don't know how to combine x and y using", using))
+    }
+}
+
+combine_using(1, 11, "sum")
+combine_using(1, 11, "difference")
+
+## ifelse
+
+# Same, but more concise
+combine_using = function(x, y, using="sum")
+{
+    # ifelse can be seen as an assignable "if"
+    result = ifelse(using == "sum", x + y, stop(paste("Don't know how to combine x and y using", using)))
+    return(result)
+}
+
+combine_using(1, 11, "sum")
+combine_using(1, 11, "difference")
+
+combine_using = function(x, y, using="sum")
+{
+    # We could chain ifelses (e.g. for more functionality)
+    result = ifelse(using == "sum", x + y,
+        ifelse(using=="difference", x - y,
+            stop(paste("Don't know how to combine x and y using", using))))
+    return(result)
+}
+
+combine_using(1, 11, "sum")
+combine_using(1, 11, "difference")
+combine_using(1, 11, "multiplication")
+
+## switch (case)
+
+# Most times it's easier to use switch for complex if(else) chains
+combine_using = function(x, y, using="sum")
+{
+    result = switch(using,
+        "sum"=x + y,
+        "difference"=x - y,
+        "multiplication"=x * y,
+        stop(paste("Don't know how to combine x and y using", using)) # Last line is the default, i.e. if nothing matches
+    )
+    return(result)
+}
+
+combine_using(1, 11, "sum")
+combine_using(1, 11, "difference")
+combine_using(1, 11, "multiplication")
+combine_using(1, 11, "division")
 
 ##### a slightly more complicated custom made function ####
 ## data: the dataframe unmder investigation
@@ -94,7 +156,7 @@ objects()
 ## factor: column used to make row selection
 ## level: defenition of rows to be selected
 
-fun1<-function(data,var,factor,level){
+subset_mean<-function(data,var,factor,level){
 
 x <- data[,var] 
 
@@ -105,13 +167,13 @@ return(result)
 }
 
 # example of use
-fun1(data=pheno.data,var="X1_LD",factor="genetic.group",level=1)
+subset_mean(data=pheno.data,var="X1_LD",factor="genetic.group",level=1)
 
-## Column selection:
+# Column selection:
 x <- pheno.data[,"X1_LD"]
 
-## Elements in vector selection
-## for rows of dataframe selection
+# Elements in vector selection
+# for rows of dataframe selection
 # data[,factor]==level) with specific objects
 pheno.data[,"genetic.group"]==1
 
@@ -119,37 +181,38 @@ pheno.data[,"genetic.group"]==1
 which(pheno.data[,"genetic.group"]==1)
 
 x[which(pheno.data[,"genetic.group"]==1)]
+x[pheno.data[,"genetic.group"]==1]
 
-## Finally, this vector is given to the earlier 
+# Finally, this vector is given to the earlier 
 # defined function My.mean:
 # My.mean(x[which(data[,factor]==level)]) 
 
 
-## Again: test fun1
-fun1(data=pheno.data,var="X1_LD",factor="genetic.group",level=1)
+## Again: test subset_mean
+subset_mean(data=pheno.data,var="X1_LD",factor="genetic.group",level=1)
 
 # The short form also works, if you keep the same order in function arguments
-fun1(pheno.data,"X1_LD","genetic.group",1)
+subset_mean(pheno.data,"X1_LD","genetic.group",1)
 
 
 ### A simple for loop ####
 
 # to avoid typing by hand:
-fun1(data=pheno.data,var="X1_LD",factor="genetic.group",level=1)
-fun1(data=pheno.data,var="X1_LD",factor="genetic.group",level=2)
-fun1(data=pheno.data,var="X1_LD",factor="genetic.group",level=3)
+subset_mean(data=pheno.data,var="X1_LD",factor="genetic.group",level=1)
+subset_mean(data=pheno.data,var="X1_LD",factor="genetic.group",level=2)
+subset_mean(data=pheno.data,var="X1_LD",factor="genetic.group",level=3)
 #etc., we script a for loop
 
 # create vector of different genetic groups
 group.vector<-unique(pheno.data$genetic.group)
 group.vector
 
-res<-c() # result vector, empty
+res<-NULL # result vector, empty
 res
 
 for (i in group.vector){
   # Calculate mean of genetic.group i
-  t <- fun1(pheno.data,var="X1_LD",factor="genetic.group",level=i)
+  t <- subset_mean(pheno.data,var="X1_LD",factor="genetic.group",level=i)
   # Place the result in the (growing) vector
   res<-c(res,t)   
 }
@@ -169,24 +232,35 @@ barplot(res)
 ## 'while' and 'repeat' loops, see 
 ## https://www.datacamp.com/community/tutorials/tutorial-on-loops-in-r
 
+## foreach loops
+# As above, but with foreach
 
+# It is an external package
+library(foreach)
+
+# Shorter and easier to read
+foreach(i=group.vector, .combine=c) %do% {
+    subset_mean(pheno.data,var="X1_LD",factor="genetic.group",level=i)
+}
 
 ### Nested for loop: traits & genetic groups ####
 
-res_tot <- c() # now a vector, but will become a matrix
+res_tot <- NULL # now null, but will become a matrix
 group.vector <- unique(pheno.data$genetic.group)
 
 # We need the column names of the traits, so all the columnnames
 # except for "genotype" and "genetic.group"
 trait.vector <- setdiff(colnames(pheno.data),c("genotype","genetic.group"))
 trait.vector
+# Same as
+colnames(pheno.data)[!colnames(pheno.data) %in% c("genotype","genetic.group")]
 
 for (i in group.vector){
 
-  res<-c()  # clean vector every genetic group
+  res<-NULL  # clean vector every genetic group
   for (j in trait.vector){
       
-        t<-fun1(pheno.data,var=j,factor="genetic.group",level=i) 
+        t<-subset_mean(pheno.data,var=j,factor="genetic.group",level=i) 
             
         res<-c(res,t)     
     }
@@ -201,6 +275,19 @@ colnames(res_tot)<-trait.vector
 dim(res_tot)
 res_tot[,1:6]
 
+# foreach
+
+res_tot = foreach(i=group.vector, .combine=rbind) %do% {
+    foreach(j=trait.vector, .combine=c) %do% {
+        subset_mean(pheno.data,var=j,factor="genetic.group",level=i) 
+    }
+}
+
+rownames(res_tot)<-group.vector
+colnames(res_tot)<-trait.vector
+
+dim(res_tot)
+res_tot[,1:6]
 
 #### apply ####
 
@@ -211,7 +298,7 @@ dim(markers)
 markers[1:20,1:10]
 
 ##try this for loop, first 2500 of 216095
-freq<-c()
+freq<-NULL
 t0<-Sys.time()  # to measure calculation time
 for(i in 1:2500 ) {
     freq<-c(freq,My.mean(markers[i,]))
@@ -226,6 +313,14 @@ names(freq) <- rownames(markers[1:2500,])
 freq[1:20]
 
 remove(freq) 
+
+# foreach equivalent, not any faster in this case
+t0<-Sys.time()
+freq = foreach(i=1:2500, .combine=c) %do% {
+    if(round(i/500)==(i/500)) print(i) # for convenience, print progress
+    My.mean(markers[i,])
+  }
+Sys.time()-t0
 
 ## Now try this (note: all 216095 rows )
 t0<-Sys.time()
@@ -246,45 +341,13 @@ hist(freq)
 # other members of the apply family:
 
 
-#### tapply ####
-# "t" because of simularity with "table" function
-
-## "tapply" groups by factor, returns 
-tapply(X = pheno.data[,"X1_LD"], # a vector
-       INDEX = pheno.data$genetic.group,
-       FUN = My.mean)
-# reminder:
-pheno.data$genetic.group
-# so: X is factorized (grouped) by tapply
-
-
-
-#### mapply ####
-# "m" because of it is a Multivariate version of sapply
-# It combines input from several objects, for a function with 
-# several arguments
-
-vector1 <- c(1  , 2,    3, 4, 5)
-vector2 <- c(100, 0, -100, 0, 1)
-
-# define a two arguments function
-My.two.arg.fun <- function(x,y)
-{
-  return(x+y)
-}
-
-mapply(FUN = My.two.arg.fun,
-       vector1,
-       vector2
-       )
-
 #### lapply and sapply ####
-# "l"apply: works on list, returns List
-# "s"apply: works on list, returns something Simplified,
-# such as a vector, matrix etc
+# "l"apply: list apply, apply a function to each list element, returning a list
+# "s"apply: simple apply, same as lapply but tries to return something simpler than a list
+# such as a vector, matrix, etc.
 
 #first, create a list
-group.list<-tapply(pheno.data[,"X1_LD"],pheno.data$genetic.group,list)
+(group.list<-tapply(pheno.data[,"X1_LD"],pheno.data$genetic.group,list))
 
 class(group.list)
 names(group.list)
@@ -306,6 +369,26 @@ class(result)
 result<-sapply(group.list,My.mean)
 result
 class(result)
+
+#### mapply ####
+# "m" because of it is a Multivariate version of sapply
+# It combines input from several objects, for a function with 
+# several arguments
+
+vector1 <- c(1  , 2,    3, 4, 5)
+vector2 <- c(100, 0, -100, 0, 1)
+
+# define a two arguments function
+My.two.arg.fun <- function(x,y)
+{
+  return(x+y)
+}
+
+mapply(FUN = My.two.arg.fun,
+       vector1,
+       vector2
+       )
+
 
 #### vapply ####
 # equals sapply but also Validates on
@@ -332,6 +415,16 @@ result<-vapply(X = group.list,
 result
 class(result)
 
+#### tapply ####
+# "t" because of simularity with "table" function
+
+## "tapply" groups by factor, returns 
+tapply(X = pheno.data[,"X1_LD"], # a vector
+       INDEX = pheno.data$genetic.group,
+       FUN = My.mean)
+# reminder:
+pheno.data$genetic.group
+# so: X is factorized (grouped) by tapply
 
 #### rapply ####
 # applies a function Recursively on lists within list
@@ -382,7 +475,7 @@ rapply(nested_list,
 # and the subsets are defined by some other vector, usually a factor.
 
 
-# two more related functions
+# some more related functions
 
 #### outer ####
 # Applying functions over all combinations of 
@@ -397,20 +490,39 @@ rownames(out) <- x
 
 out
 
-#### aggregate ####
-# Applying functions over factor levels, multivariate
+## expand.grid
+# Same as outer but doesn't apply a function, just gives a long format data.frame of combinations
 
+expand.grid(x,y)
+
+## by
 # Remember "tapply" which groups by factor
 tapply(X = pheno.data[,"X1_LD"],
        INDEX = pheno.data$genetic.group,
        FUN = My.mean)
 
+# Wrapper for tapply for data.frames
+(by_res = by(pheno.data[,"X1_LD"],
+       INDICES = pheno.data$genetic.group,
+       FUN = My.mean))
+
+class(by_res) # class "by" which is also a list
+unlist(as.list(by_res)) # a bit annoying to deal with when you expect a data.frame
+
+#### aggregate ####
+# Applying functions over factor levels, multivariate
+
 # now multivariate, and with slightly different arguments:
-result <- aggregate(x   = pheno.data[,trait.vector],
+(result <- aggregate(x   = pheno.data[,trait.vector],
                     by  = list(pheno.data$genetic.group), # this must be a list!
-                    FUN = My.mean)
+                    FUN = My.mean))
 
-result
+## by and aggregate with iris: getting mean of each trait per species
 
+(by_iris = by(iris[,-which(names(iris)=="Species")], iris$Species, colMeans))
+Reduce(rbind, by_iris) # Reduce or do.call to merge list elements into a data.frame
+
+# With aggregate; note that we do mean rather than colMeans, as input is vector
+aggregate(iris[,-which(names(iris)=="Species")], list(iris$Species), mean)
 
 ############## The End
