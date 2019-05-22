@@ -115,6 +115,14 @@ combine_using = function(x, y, using="sum")
     return(result)
 }
 
+# ifelse is somewhat equivalent to:
+myifelse = function(test, yes, no)
+{
+    if (test)
+        return(yes)
+    return(no)
+}
+
 combine_using(1, 11, "sum")
 combine_using(1, 11, "difference")
 
@@ -140,6 +148,7 @@ combine_using = function(x, y, using="sum")
         "sum"=x + y,
         "difference"=x - y,
         "multiplication"=x * y,
+        "division"=x/y, 
         stop(paste("Don't know how to combine x and y using", using)) # Last line is the default, i.e. if nothing matches
     )
     return(result)
@@ -151,7 +160,7 @@ combine_using(1, 11, "multiplication")
 combine_using(1, 11, "division")
 
 ##### a slightly more complicated custom made function ####
-## data: the dataframe unmder investigation
+## data: the dataframe under investigation
 ## var: column of interest
 ## factor: column used to make row selection
 ## level: defenition of rows to be selected
@@ -333,6 +342,10 @@ names(freq) <- rownames(markers)
 freq[1:20]
 
 hist(freq)
+
+t0<-Sys.time()
+freq = rowMeans(markers)
+Sys.time()-t0
 
 ## What did we do? 
 ## "apply" applies a function over rows, or columns, 
@@ -520,7 +533,7 @@ unlist(as.list(by_res)) # a bit annoying to deal with when you expect a data.fra
 ## by and aggregate with iris: getting mean of each trait per species
 
 (by_iris = by(iris[,-which(names(iris)=="Species")], iris$Species, colMeans))
-Reduce(rbind, by_iris) # Reduce or do.call to merge list elements into a data.frame
+class(Reduce(rbind, by_iris)) # Reduce or do.call to merge list elements into a data.frame
 
 # With aggregate; note that we do mean rather than colMeans, as input is vector
 aggregate(iris[,-which(names(iris)=="Species")], list(iris$Species), mean)
