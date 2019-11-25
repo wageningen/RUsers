@@ -35,9 +35,13 @@ filter_uneven <- function(x) {
 }
 
 # num, num -> num
-Reduce(function(head, tail) c(filter_uneven(head), tail), x = x)
+Reduce(function(head, tail) c(head, filter_uneven(tail)), x = x)
 # function = num -> bool
 Filter(function(x) x %% 2 == 1, x)
+
+# Reduce is very similar to do.call and can be useful to parse lapply output
+(myList = lapply(x, foo))
+Reduce(c, myList)
 
 # function factory
 # type: num -> (num -> num)
@@ -105,3 +109,46 @@ sfStop()
 
 hist(results$Output)
 
+## foreach package ##
+
+library(foreach)
+library(doParallel)
+
+registerDoParallel(cores=12)
+system.time(
+    primesForeach <- foreach (i=x, .combine=c, .multicombine=TRUE, .inorder=TRUE, .maxcombine=10000) %dopar%
+    {
+        isPrime(i)
+    }
+)
+
+all.equal(primes1, x[primesForeach])
+
+# With a progress bar
+library(doSNOW)
+
+cl <- makeCluster(12)
+registerDoSNOW(cl)
+pb <- txtProgressBar(max = length(x), style = 3)
+opts <- list(progress = function(n) setTxtProgressBar(pb, n))
+system.time(
+    primesForeachSNOW <- foreach(i=x, .combine=c, .multicombine=TRUE, .inorder=TRUE, .maxcombine=10000,
+                    .options.snow = opts) %dopar%
+    {
+        isPrime(i)
+    }
+)
+close(pb)
+stopCluster(cl)
+
+all.equal(primes1, x[primesForeachSNOW])
+
+## pbapply package ##
+
+library(pbapply)
+
+system.time(primesPb1 <- x[pbsapply(x, isPrime)])
+all.equal(primes1, primesPb1)
+
+system.time(primesPb2 <- x[pbsapply(x, isPrime, cl=12)])
+all.equal(primes1, primesPb2)
